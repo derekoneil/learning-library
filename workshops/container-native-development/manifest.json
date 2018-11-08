@@ -14,11 +14,6 @@
             "name": "Linux/Mac Local Install",
             "description": "Setup your own Linux or OS X laptop to run this workshop",
             "imageUrl": "https://oracle.github.io/learning-library/workshops/common-content/images/common/laptop.jpg"
-          },
-          {
-            "name": "VNC Image",
-            "description": "Use an Oracle Provided Cloud Image to perform this Workshop.",
-            "imageUrl": "images/OracleCode.png"
           }
         ],
         "labs": [
@@ -161,6 +156,20 @@
                 "title": "Cloud Environments Post Workshop Cleanup",
                 "description": "Reset your laptop and cloud environment by removing the Cloud Instances, Networking, etc. created during the workshop",
                 "labels": {"version": "Linux/Mac Local Install"}
+            },
+            {
+                "number": "100",
+                "filename": "Instructor-Guide.md",
+                "title": "How to prepare for this workshop",
+                "description": "Requesting GSE environments",
+                "labels": {"version": "Oracle Instructor Guide"}
+            },
+            {
+                "number": "200",
+                "filename": "Troubleshooting.md",
+                "title": "Troubleshooting",
+                "description": "Common problems encountered and tips for how to solve them",
+                "labels": {"version": "Oracle Instructor Guide"}
             }
         ]
     }

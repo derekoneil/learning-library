@@ -38,11 +38,17 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
 
 ### **STEP 1**: Start an Fn Server on Your Local Machine
 
-- Since you are using the Oracle-provided client image, **Fn is pre-installed** for you. Let's start up a local Fn Server. From a terminal, run `fn start`.
+- Since you are using the Oracle-provided client image, **Fn is pre-installed** for you. Let's update the CLI to the latest version.
+
+ ```bash
+ curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sh
+ ```
+
+- Let's start up a local Fn Server. From a terminal, run `fn start`.
 
   ![](images/500/8.png)
 
-- You should see the Fn logo printed to the console, as well as a message indicating the port that the Fn Server is using: `Fn serving on ':8080'`. From a browser, navigate to **[http://localhost:8080](http://localhost:8080)**, substituting the port listed in the log message for 8080 if it differs. You should see a 'hello world' message in your browser, confirming that the Fn Server is up and running. If you do not see this message, but did not receive an error, don't be concerned - continue with the next step. 
+- You should see the Fn logo printed to the console, as well as a message indicating the port that the Fn Server is using: `Fn serving on ':8080'`. From a browser, navigate to **[http://localhost:8080](http://localhost:8080)**, substituting the port listed in the log message for 8080 if it differs. You should see a 'hello world' message in your browser, confirming that the Fn Server is up and running. If you do not see this message, but did not receive an error, don't be concerned - continue with the next step.
 
   ![](images/500/9.png)
 
@@ -70,7 +76,7 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
 
 - With the function deployed to our local Fn Server, we can use **curl** to test it. Execute the following command while still in the image-resize directory in your terminal window:
 
-`curl -X POST --data-binary @"sample-image.jpg" -H "Content-Type: application/octet-stream" http://localhost:8080/r/imgconvert/resize128 > thumbnail.jpg`
+`curl -X POST --data-binary @"sample-image.jpg" -H "Content-Type: application/octet-stream" http://localhost:8080/t/imgconvert/resize128 > thumbnail.jpg`
 
   ![](images/500/12.png)
 
@@ -90,9 +96,13 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
 
   `cd ~/fn-helm`
 
+- Retrieve the correct version of the Helm chart by running the following command:
+
+  `git checkout 4e4988`
+
 - Specify the version of Fn we want to install by modifying the `values.yaml` file using this command:
 
-  `sed -i.bak 's/fnproject\/fnserver:latest/fnproject\/fnserver:0.3.327/' fn/values.yaml`
+  `sed -i.bak 's/fnproject\/fnserver:latest/fnproject\/fnserver:0.3.579/' fn/values.yaml`
 
 - Initialize Helm and upgrade the server-side version (Tiller) by running:
 
@@ -112,6 +122,13 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
   kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'      
   helm init --service-account tiller --upgrade
   ```
+
+- Update the readiness probe URL for v2 of the fn API by running:
+
+  ```bash
+  sed 's/\/v1\/apps/\/v2\/apps/' fn/templates/fn-daemonset.yaml
+  ```
+
 - Install the **Fn chart** by running the following command. **NOTE** _DO NOT_ change the name of the release, `my-release`. This name becomes part of the Kubernetes service name, which is used for DNS routing. If the name is changed, the product catalog application will not be able to communicate with the deployed function.
 
   `helm install --name my-release fn`
@@ -173,7 +190,7 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
 - Test the function using **curl**, but this time using the URL of the remote Fn Server:
 
   ```bash
-  curl -X POST --data-binary @"sample-image.jpg" -H "Content-Type: application/octet-stream" $FN_API_URL/r/imgconvert/resize128 > thumbnail-remote.jpg
+  curl -X POST --data-binary @"sample-image.jpg" -H "Content-Type: application/octet-stream" $FN_API_URL/t/imgconvert/resize128 > thumbnail-remote.jpg
   ```
 
   ![](images/500/20.png)
@@ -188,7 +205,13 @@ During this lab, you will take on the **Lead Developer Persona** and extend your
 
 ### **STEP 7**: Test Your Function in the Product Catalog
 
-- Open the **product catalog** website in a browser. If you don't have the URL, you can look in the Kubernetes dashboard for the **external endpoint** of the product-catalog-service, or you can run the following command from your terminal window:
+- **Close all Firefox windows** that you may have open inside the Virtual Machine. **Update Firefox** by running the following command in a terminal window:
+
+  ```bash
+  sudo yum -y update firefox
+  ```
+
+- Open the **product catalog** website in Firefox. If you don't have the URL, you can look in the [Kubernetes Dashboard](http://localhost:8001/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/#!/overview?namespace=default) for the **external endpoint** of the product-catalog-service, or you can run the following command from your terminal window:
 
   ```bash
   echo http://$(kubectl get svc --namespace default product-catalog-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):$(kubectl get svc --namespace default product-catalog-service -o jsonpath='{.spec.ports[0].port}')
